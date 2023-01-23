@@ -1,0 +1,163 @@
+{
+  "name": "synapse-spark",
+  "displayName": "Synapse Spark Tools",
+  "description": "Submit batch jobs to Synapse Spark pools",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/sjensen85/synapse-spark.git"
+  },
+  "publisher": "SethJensen",
+  "version": "0.0.1",
+  "engines": {
+    "vscode": "^1.74.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [
+    "onLanguage:python"
+  ],
+  "main": "./out/main.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "synapse-spark.submitBatch",
+        "title": "Synapse Spark: Submit Batch"
+      },
+      {
+        "command": "synapse-spark.configureAll",
+        "title": "Synapse Spark: Configure All"
+      },
+      {
+        "command": "synapse-spark.configureSynapseWorkspace",
+        "title": "Synapse Spark: Configure Synapse Workspace"
+      },
+      {
+        "command": "synapse-spark.configureAzureSubscription",
+        "title": "Synapse Spark: Configure Azure Subscription"
+      },
+      {
+        "command": "synapse-spark.configureTempAdlsAccount",
+        "title": "Synapse Spark: Configure Temp ADLS Account"
+      },
+      {
+        "command": "synapse-spark.configureTempAdlsContainer",
+        "title": "Synapse Spark: Configure Temp ADLS Container"
+      },
+      {
+        "command": "synapse-spark.configureTempAdlsPath",
+        "title": "Synapse Spark: Configure Temp ADLS Path"
+      },
+      {
+        "command": "synapse-spark.selectPool",
+        "title": "Synapse Spark: Select Spark Pool"
+      }
+    ],
+    "menus": {
+      "commandPalette": [
+        {
+          "command": "synapse-spark.submitBatch",
+          "when": "false"
+        }
+      ],
+      "editor/context": [
+        {
+          "when": "resourceLangId == python",
+          "command": "synapse-spark.selectPool",
+          "alt": "synapse-spark.selectPool",
+          "group": "2_main@1"
+        },
+        {
+          "when": "resourceLangId == python",
+          "command": "synapse-spark.submitBatch",
+          "alt": "synapse-spark.submitBatch",
+          "group": "2_main@1"
+        }
+      ]
+    },
+    "configuration": {
+      "type": "object",
+      "title": "Synapse Spark Tools",
+      "properties": {
+        "synapse-spark.subscriptionId": {
+          "type": "string",
+          "default": "",
+          "description": "Selected Azure Subscription"
+        },
+        "synapse-spark.workspace": {
+          "type": "string",
+          "default": "",
+          "description": "Selected Synapse Workspace"
+        },
+        "synapse-spark.resourceGroupName": {
+          "type": "string",
+          "default": "",
+          "description": "Resource Group of Synapse Workspace"
+        },
+        "synapse-spark.adlsTempAccount": {
+          "type": "string",
+          "default": "",
+          "description": "Temporary storage account to upload files"
+        },
+        "synapse-spark.adlsTempContainer": {
+          "type": "string",
+          "default": "",
+          "description": "Temporary storage account container to upload files"
+        },
+        "synapse-spark.adlsTempPath": {
+          "type": "string",
+          "default": "",
+          "description": "Temporary storage account path to upload files"
+        },
+        "synapse-spark.workspaceName": {
+          "type": "string",
+          "default": "",
+          "description": "Synapse Workspace Name"
+        },
+        "synapse-spark.cluster": {
+          "type": "string",
+          "default": "",
+          "description": "Selected Spark pool"
+        }
+      }
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run esbuild-base -- --minify",
+    "esbuild-base": "esbuild ./src/extension.ts --bundle --outfile=out/main.js --external:vscode --external:keytar --format=cjs --platform=node",
+    "esbuild": "npm run esbuild-base -- --sourcemap",
+    "esbuild-watch": "npm run esbuild-base -- --sourcemap --watch",
+    "test-compile": "tsc -p ./",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "pretest": "npm run compile && npm run lint",
+    "lint": "eslint src --ext ts",
+    "test": "node ./out/test/runTest.js"
+  },
+  "devDependencies": {
+    "@azure/identity-vscode": "^1.0.0",
+    "@types/glob": "^8.0.0",
+    "@types/mocha": "^10.0.1",
+    "@types/node": "16.x",
+    "@types/vscode": "^1.74.0",
+    "@typescript-eslint/eslint-plugin": "^5.45.0",
+    "@typescript-eslint/parser": "^5.45.0",
+    "@vscode/test-electron": "^2.2.0",
+    "esbuild": "^0.17.1",
+    "eslint": "^8.28.0",
+    "glob": "^8.0.3",
+    "mocha": "^10.1.0",
+    "typescript": "^4.9.3"
+  },
+  "dependencies": {
+    "@azure/arm-storage": "^18.1.0",
+    "@azure/arm-subscriptions": "^5.1.0",
+    "@azure/arm-synapse": "^8.0.0",
+    "@azure/core-paging": "^1.4.0",
+    "@azure/identity": "^3.1.2",
+    "@azure/storage-file-datalake": "^12.11.0",
+    "@azure/synapse": "^1.0.0-preview.1",
+    "@azure/synapse-spark": "^1.0.0-beta.4",
+    "node-fetch": "^2.6.7"
+  }
+}
