@@ -1,4 +1,4 @@
-# synapse-spark README
+# synapse-spark-tools README
 
 Provides the ability to submit PySpark batch jobs to Azure Synapse Spark pools.
 
@@ -6,7 +6,7 @@ Provides the ability to submit PySpark batch jobs to Azure Synapse Spark pools.
 
 Submit PySpark batch jobs to Synapse clusters by using the context menu. 
 
-\!\[submit-batch\]\(images/submit.png\)
+![submit-batch](images/submit.png)
 
 ## Requirements
 
