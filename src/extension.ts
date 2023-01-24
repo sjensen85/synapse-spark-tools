@@ -12,17 +12,18 @@ import {
 import { DataLakeServiceClient } from "@azure/storage-file-datalake";
 import { listPools, submitBatchJob } from "./synapse";
 import {
-  uploadFileToTempLocation,
-  uploadLocalFilesToTempLocation,
+  uploadFileToTempLocation
 } from "./storage";
 var path = require("path");
 
 useIdentityPlugin(vsCodePlugin);
 
+let EXT_CONFIG_ID: string = "synapse-spark";
+
 // This method is called when your extension is activated
 // Your extension is activated the very first time the command is executed
 export async function activate(context: vscode.ExtensionContext) {
-  const config = vscode.workspace.getConfiguration("synapse-spark");
+  const config = vscode.workspace.getConfiguration(EXT_CONFIG_ID);
 
   // retrieve values
   const subscriptionId = String(config.get("subscriptionId"));
@@ -46,7 +47,7 @@ export async function activate(context: vscode.ExtensionContext) {
   let submitBatch = vscode.commands.registerCommand(
     "synapse-spark.submitBatch",
     async () => {
-      const config = vscode.workspace.getConfiguration("synapse-spark");
+      const config = vscode.workspace.getConfiguration(EXT_CONFIG_ID);
       const options = JSON.parse(JSON.stringify(config.get("batchJobOptions")));
       const resourceGroup = String(config.get("resourceGroupName"));
       const adlsTempAccount = String(config.get("adlsTempAccount"));
@@ -57,6 +58,7 @@ export async function activate(context: vscode.ExtensionContext) {
         vscode.window.activeTextEditor?.document.fileName!
       );
       const fileContents = vscode.window.activeTextEditor?.document.getText()!;
+
       const now = new Date();
       var strDateTime = [
         now.getFullYear(),
@@ -77,7 +79,7 @@ export async function activate(context: vscode.ExtensionContext) {
       );
 
       options.file = `abfss://${adlsTempContainer}@${adlsTempAccount}.dfs.core.windows.net/${adlsTempPath}${fileName}`;
-      options.name = `SparkBatch-${strDateTime}`;
+      options.name = `SparkBatch_${strDateTime}`;
 
       submitBatchJob(
         subscriptionId,
@@ -99,7 +101,7 @@ export async function activate(context: vscode.ExtensionContext) {
   let configureSynapseWorkspace = vscode.commands.registerCommand(
     "synapse-spark.configureSynapseWorkspace",
     async () => {
-      const config = vscode.workspace.getConfiguration("synapse-spark");
+      const config = vscode.workspace.getConfiguration(EXT_CONFIG_ID);
       const subscriptionId = String(config.get("subscriptionId"));
       await showSynapseWorkspaceSelection(subscriptionId);
     }
@@ -108,7 +110,7 @@ export async function activate(context: vscode.ExtensionContext) {
   let configureTempAdlsAccount = vscode.commands.registerCommand(
     "synapse-spark.configureTempAdlsAccount",
     async () => {
-      const config = vscode.workspace.getConfiguration("synapse-spark");
+      const config = vscode.workspace.getConfiguration(EXT_CONFIG_ID);
       const subscriptionId = String(config.get("subscriptionId"));
       await showAdlsAccountSelection(subscriptionId);
     }
@@ -117,7 +119,7 @@ export async function activate(context: vscode.ExtensionContext) {
   let configureTempAdlsContainer = vscode.commands.registerCommand(
     "synapse-spark.configureTempAdlsContainer",
     async () => {
-      const config = vscode.workspace.getConfiguration("synapse-spark");
+      const config = vscode.workspace.getConfiguration(EXT_CONFIG_ID);
       const account = String(config.get("adlsTempAccount"));
       await showAdlsContainerSelection(account);
     }
@@ -126,7 +128,7 @@ export async function activate(context: vscode.ExtensionContext) {
   let configureTempAdlsPath = vscode.commands.registerCommand(
     "synapse-spark.configureTempAdlsPath",
     async () => {
-      const config = vscode.workspace.getConfiguration("synapse-spark");
+      const config = vscode.workspace.getConfiguration(EXT_CONFIG_ID);
       const container = String(config.get("adlsTempContainer"));
       await showAdlsPathInput(container);
     }
@@ -193,12 +195,7 @@ const showPoolsSelection = (
         return;
       }
 
-      const config = vscode.workspace.getConfiguration("synapse-spark");
-      await config.update(
-        "cluster",
-        selection.label,
-        vscode.ConfigurationTarget.Workspace
-      );
+      updateConfig(EXT_CONFIG_ID, "cluster", selection.label);
     });
 };
 
@@ -229,12 +226,7 @@ const showSubscriptionsSelection = async () => {
         return "";
       }
 
-      const config = vscode.workspace.getConfiguration("synapse-spark");
-      await config.update(
-        "subscriptionId",
-        selection.description,
-        vscode.ConfigurationTarget.Workspace
-      );
+      updateConfig(EXT_CONFIG_ID, "subcriptionId", selection.description!);
       return !!selection.description ? selection.description : "";
     });
 };
@@ -269,17 +261,8 @@ const showSynapseWorkspaceSelection = async (subscriptionId: string) => {
         return;
       }
 
-      const config = vscode.workspace.getConfiguration("synapse-spark");
-      await config.update(
-        "workspace",
-        selection.label,
-        vscode.ConfigurationTarget.Workspace
-      );
-      await config.update(
-        "resourceGroupName",
-        selection.description,
-        vscode.ConfigurationTarget.Workspace
-      );
+      updateConfig(EXT_CONFIG_ID, "workspace", selection.label);
+      updateConfig(EXT_CONFIG_ID, "resourceGroupName", selection.label);
       return !!selection.label ? selection.label : "";
     });
 };
@@ -311,12 +294,7 @@ const showAdlsAccountSelection = async (subscriptionId: string) => {
         return;
       }
 
-      const config = vscode.workspace.getConfiguration("synapse-spark");
-      await config.update(
-        "adlsTempAccount",
-        selection.label,
-        vscode.ConfigurationTarget.Workspace
-      );
+      updateConfig(EXT_CONFIG_ID, "adlsTempAccount", selection.label);
       return !!selection.label ? selection.label : "";
     });
 };
@@ -351,12 +329,7 @@ const showAdlsContainerSelection = async (account: string) => {
         return;
       }
 
-      const config = vscode.workspace.getConfiguration("synapse-spark");
-      await config.update(
-        "adlsTempContainer",
-        selection.label,
-        vscode.ConfigurationTarget.Workspace
-      );
+      updateConfig(EXT_CONFIG_ID, "adlsTempContainer", selection.label);
       return !!selection.label ? selection.label : "";
     });
 };
@@ -374,7 +347,7 @@ const showAdlsPathInput = async (container: string) => {
         result = text.endsWith("/") ? text : text + "/";
       }
 
-      const config = vscode.workspace.getConfiguration("synapse-spark");
+      const config = vscode.workspace.getConfiguration(EXT_CONFIG_ID);
       config.update(
         "adlsTempPath",
         result,
@@ -384,3 +357,12 @@ const showAdlsPathInput = async (container: string) => {
     },
   });
 };
+
+const updateConfig = async (configName: string, property: string, value: string) => {
+  const config = vscode.workspace.getConfiguration(configName);
+  await config.update(
+    property,
+    value,
+    vscode.ConfigurationTarget.Workspace
+  );
+}
